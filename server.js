@@ -74,6 +74,13 @@ function buildMentionSentence(reviewers) {
   );
 }
 
+function submitterMessageGenerator(submitter) {
+  return util.format(
+    '%s: Please review the checklist for your PR: (checklist goes here)',
+    buildMentionSentence(submitter)
+  )
+}
+
 function defaultMessageGenerator(reviewers) {
   return util.format(
     'By analyzing the blame information on this pull request' +
@@ -133,6 +140,8 @@ app.post('/', function(req, res) {
         return res.end();
       }
 
+      // Create comment to mention the potential reviewers
+      // and their checklist
       github.issues.createComment({
         user: data.repository.owner.login, // 'fbsamples'
         repo: data.repository.name, // 'bot-testing'
@@ -141,6 +150,19 @@ app.post('/', function(req, res) {
           reviewers,
           buildMentionSentence,
           defaultMessageGenerator
+        )
+      });
+
+      // Create comment to mention the PR owner
+      // with the submitter checklist 
+      github.issues.createComment({
+        user: data.repository.owner.login, // 'fbsamples'
+        repo: data.repository.name, // 'bot-testing'
+        number: data.pull_request.number, // 23
+        body: messageGenerator(
+          [data.pull_request.user],
+          buildMentionSentence,
+          submitterMessageGenerator
         )
       });
 
