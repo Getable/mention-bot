@@ -133,6 +133,26 @@ app.post('/', function(req, res) {
         return res.end();
       }
 
+      github.repos.getContent({
+        user: data.repository.owner.login,
+        repo: data.repository.name,
+        path: 'docs/qa-checklist.md',
+        headers: {
+          Accept: 'application/vnd.github.v3.raw'
+        }
+      }, function(err, content) {
+        if (err) {
+          console.log('error: ', err)
+          return
+        }
+        github.issues.createComment({
+          user: data.repository.owner.login, // 'fbsamples'
+          repo: data.repository.name, // 'bot-testing'
+          number: data.pull_request.number, // 23
+          body: content
+        })        
+      })
+
       github.issues.createComment({
         user: data.repository.owner.login, // 'fbsamples'
         repo: data.repository.name, // 'bot-testing'
